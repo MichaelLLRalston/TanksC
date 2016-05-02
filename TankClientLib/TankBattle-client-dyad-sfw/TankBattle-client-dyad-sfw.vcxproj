@@ -131,6 +131,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\libs\dyad\dyad.c" />
+    <ClCompile Include="..\TankBattle-net\Base.cpp" />
+    <ClCompile Include="..\TankBattle-net\Cannon.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +141,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="HumanAgent.h" />
     <ClInclude Include="IAgent.h" />
+    <ClInclude Include="RalstonAgent.h" />
     <ClInclude Include="Solver.h" />
     <ClInclude Include="TankBattleHeader.h" />
     <ClInclude Include="Vector2.h" />

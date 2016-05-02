@@ -3,6 +3,7 @@
 
 #include "AutoAgent.h"
 #include "HumanAgent.h"
+#include "RalstonAgent.h"
 
 #include "TankBattleNet.h"
 #include "sfwdraw.h"
@@ -60,7 +61,7 @@ int main(int argc, char** argv)
         sfw::initContext(WINDOW_WIDTH, WINDOW_HEIGHT, "TankController");
         g_FONT = sfw::loadTextureMap("./res/fontmap.png", 16, 16);
 
-        AutoAgent  aiAgent;
+        RalstonAgent  aiAgent;
         HumanAgent huAgent;
         bool isHuman = false;
 

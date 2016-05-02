@@ -27,6 +27,12 @@
     <ClCompile Include="..\libs\dyad\dyad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\TankBattle-net\Base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TankBattle-net\Cannon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TankBattleHeader.h">
@@ -52,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="Vector2.h">
       <Filter>Header Files\Path</Filter>
+    </ClInclude>
+    <ClInclude Include="RalstonAgent.h">
+      <Filter>Header Files\Agents</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
