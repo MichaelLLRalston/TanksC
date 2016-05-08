@@ -11,7 +11,6 @@
 
 using std::stringstream;
 
-
 // use O or P to switch between players
 const char GAME_QUIT = 'L';
 const char GAME_TOGGLE_AI    = 'O';
@@ -20,10 +19,7 @@ const char GAME_TOGGLE_HUMAN = 'P';
 const int WINDOW_HEIGHT = 800;
 const int WINDOW_WIDTH  = 400;
 
-
 void printTacticalData(tankNet::TankBattleStateData * state);
-
-
 
 unsigned g_FONT = 0;
 
@@ -40,17 +36,15 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
     else if (argc == 2)
-        serverIPAddress = argv[1]; 
+        serverIPAddress = argv[1];
 
     // initialize networking
     if (serverIPAddress[0] == '\0') tankNet::init();
     else                            tankNet::init(serverIPAddress);
 
-
     // block further execution until the server responds
     // or until the client gives up on connecting
     while (!tankNet::isProvisioned()) tankNet::update();
-    
 
     // if a connection was successful...
     if (tankNet::isConnected() && tankNet::isProvisioned())
@@ -60,8 +54,15 @@ int main(int argc, char** argv)
         // initialize SFW and assets
         sfw::initContext(WINDOW_WIDTH, WINDOW_HEIGHT, "TankController");
         g_FONT = sfw::loadTextureMap("./res/fontmap.png", 16, 16);
-
-        RalstonAgent  aiAgent;
+		IAgent* aiAgent;
+		if (serverData->playerID == 0)
+		{
+			aiAgent = new RalstonAgent();
+		}
+		else
+		{
+			aiAgent = new AutoAgent();
+		}
         HumanAgent huAgent;
         bool isHuman = false;
 
@@ -76,14 +77,14 @@ int main(int argc, char** argv)
             tankNet::TankBattleStateData * state = tankNet::recieve();
 
             printTacticalData(state);
-        
+
             // Toggle between human or computer player, for debug
             if (sfw::getKey(GAME_TOGGLE_AI))    isHuman = false;
             if (sfw::getKey(GAME_TOGGLE_HUMAN)) isHuman = true;
 
             // use human agent or AI agent to determine the TBC
             tankNet::TankBattleCommand ex = isHuman ? huAgent.update(state)
-                                                    : aiAgent.update(state);
+                                                    : aiAgent->update(state);
 
             // begin transmission
             tankNet::send(ex);
@@ -99,12 +100,6 @@ int main(int argc, char** argv)
 
     return EXIT_SUCCESS;
 }
-
-
-
-
-
-
 
 void printTacticalData(tankNet::TankBattleStateData * state)
 {

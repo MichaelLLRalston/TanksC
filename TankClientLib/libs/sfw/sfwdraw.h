@@ -209,6 +209,7 @@ namespace sfw
 	// get the time passsed between the last two frames.
 	// This value will NOT change until stepContext is called.
 	// use getTime to implement your own timing system.
+	//BUG: THIS IS A BAD WAY TO GET DELTA TIME, PASS IT INTO YOUR UPDATE METHODS!
 	float getDeltaTime();
 
 

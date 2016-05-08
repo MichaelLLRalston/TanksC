@@ -13,7 +13,6 @@
     Example dumb agent.
 
     State Description:
-        
 
         Cannon:
             SCAN:
@@ -26,10 +25,10 @@
         Tank:
             Explore:
                 If touching Target, set random Target
-                Path to Target                
+                Path to Target
 */
 
-class AutoAgent : public IAgent 
+class AutoAgent : public IAgent
 {
     // Cache current battle data on each update
     tankNet::TankBattleStateData current;
@@ -66,7 +65,7 @@ class AutoAgent : public IAgent
             if (current.tacticoolData[aimTarget].inSight && current.canFire) // if in Sight and we can fire
             {
                 target = Vector2::fromXZ(current.tacticoolData[aimTarget].lastKnownPosition);
-             
+
                 if(dot(tf, normal(target-cp)) > .87f)
                     turretState = FIRE;
                 break;
@@ -86,20 +85,17 @@ class AutoAgent : public IAgent
         Vector2 cp = Vector2::fromXZ(current.position); // current position
         Vector2 cf = Vector2::fromXZ(current.forward);  // current forward
 
-        
         randTimer -= sfw::getDeltaTime();
 
-        // If we're pretty close to the target, get a new target           
+        // If we're pretty close to the target, get a new target
         if (distance(target, cp) < 20 || randTimer < 0)
         {
             target = Vector2::random() * Vector2 { 50, 50 };
             randTimer = rand() % 4 + 2; // every 2-6 seconds randomly pick a new target
         }
 
-
-       
         // determine the forward to the target (which is the next waypoint in the path)
-        Vector2 tf = normal(target - cp);        
+        Vector2 tf = normal(target - cp);
 
         if (dot(cf, tf) > .87f) // if the dot product is close to lining up, move forward
             tbc.tankMove = tankNet::TankMovementOptions::FWRD;

@@ -10,8 +10,10 @@ class RalstonAgent : public IAgent
 
 	Vector2 moveTarget;
 	Vector2 lookTarget;
+	Vector2 pastLocation;
+	float currentStandingStillTime;
+	float maxStandingStillTime;
 	//std::list<tankNet::TankBattleStateData> states;
-
 
 	// aim the cannon at the target
 	bool lookToward(const Vector2 &target)
@@ -26,11 +28,7 @@ class RalstonAgent : public IAgent
 			action.cannonMove = tankNet::CannonMovementOptions::LEFT;
 		if (dot(Caim, perp(Taim)) == 0)
 			return distance(Caim, target);
-
-		
-
 	}
-
 
 	// Find a good value for tank Move
 	bool moveToward(const Vector2 &target)
@@ -49,7 +47,6 @@ class RalstonAgent : public IAgent
 		// Desired Forward = Normalization of the difference in position
 		Vector2 tfow = normal(target-cpos);
 
-
 		// Line Up with the Target (Turn left or Right)
 
 		if(dot(cfow,perp(tfow)) > 0)
@@ -58,24 +55,22 @@ class RalstonAgent : public IAgent
 		if (dot(cfow, perp(tfow)) < 0)
 			action.tankMove = tankNet::TankMovementOptions::LEFT;
 
-
 		// Move Toward the Target (Move forward or backwards towards target)
 		if (dot(cfow, tfow) >  cos(PI / 12.f))
 		{
-			action.tankMove = tankNet::TankMovementOptions::FWRD;			
+			action.tankMove = tankNet::TankMovementOptions::FWRD;
 		}
 		if (dot(cfow, tfow) < -cos(PI / 12.f))
 			action.tankMove = tankNet::TankMovementOptions::BACK;
 
-
 		return distance(cpos, target) < 10;
-			
 	}
-
 
 public:
 	RalstonAgent()
 	{
+		currentStandingStillTime = 0;
+		maxStandingStillTime = 1;
 		moveTarget = Vector2::random() * Vector2 { 50, 50 };
 		std::cout << "Target Acquired: " << moveTarget.x << " " << moveTarget.y << std::endl;
 
@@ -87,14 +82,12 @@ public:
 	{
 		previous = current;
 		current  = *state;
+		float deltaTime = sfw::getDeltaTime();
 
-		
 	/*
-		Analyze the state data and determine which actions you want.	
-	
-	
-	*/	
+		Analyze the state data and determine which actions you want.
 
+	*/
 
 		if (moveToward(moveTarget))
 		{
@@ -109,25 +102,37 @@ public:
 			std::cout << "Target Visualized: " << lookTarget.x << " " << lookTarget.y << std::endl;
 		}
 
+		const Vector2 cpos = Vector2::fromXZ(current.position);
+
+		if (pastLocation == cpos)
+		{
+			currentStandingStillTime += deltaTime;
+			if (currentStandingStillTime >= maxStandingStillTime)
+			{
+				moveTarget = Vector2::random() * Vector2 { 50, 50 };
+			}
+		}
+		else
+		{
+			currentStandingStillTime = 0;
+		}
+
+		pastLocation = cpos;
+
 		//action.cannonMove = tankNet::CannonMovementOptions::LEFT;
 		//action.tankMove   = tankNet::TankMovementOptions::FWRD;
-		//action.fireWish   = false;
+		action.fireWish   = false;
 
 		return action;
 	}
-
 };
 
-
 // Percepts -> Agent -> Actuates
-
 
 /*
 	percepts -> Agent
 					-> Analysis <- Find where we want to move toward
 					-> Behavior <- develop logic to move towards a target
 					-> Action
-
-
 
 */
