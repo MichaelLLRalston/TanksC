@@ -1,0 +1,13 @@
+RalstonAI holds only a few states
+
+-At the start of the game the turret begins to spin (scan function) and the engine decides on a random target (move Target)
+
+-If the cannon notices an enemy it fires until it no longer sees them ( does not stop spinning) ( fire function )
+
+-After firing the state technically returns to scan for a tick 
+
+-If the engine reaches its destination it picks a new spot and starts heading for that instead
+
+-If the engine runs into a wall (aka it stops moving) a counter starts
+	- If that counter hits a set value the engine sets a new random target
+

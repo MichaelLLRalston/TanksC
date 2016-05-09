@@ -42,19 +42,29 @@ class RalstonAgent : public IAgent
 			}
 		}
 	}
+	// not working yet
 	void track()
 	{
 		Vector2 Caim = Vector2::fromXZ(current.cannonForward);
 		Vector2 Epos = Vector2::fromXZ(Target.lastKnownPosition);
 		Vector2 Cp = Vector2::fromXZ(current.position);
+		Vector2 Tfow = normal(Epos-Caim);
 
 		for (int enemy = 0; enemy < current.playerCount - 1; ++enemy)
 
 		{
 			if (current.tacticoolData[enemy].inSight)
 			{
-				Caim = Epos;
+				if (dot(Caim, perp(Tfow)) > 0)
+				{
+					action.cannonMove = tankNet::CannonMovementOptions::RIGHT;
+				}
+				if (dot(Caim, perp(Tfow)) < 0)
+				{
+					action.cannonMove = tankNet::CannonMovementOptions::LEFT;
+				}
 			}
+		
 			else
 			{
 				turretstate = SCAN;

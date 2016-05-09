@@ -25,7 +25,7 @@ unsigned g_FONT = 0;
 
 int main(int argc, char** argv)
 {
-    char * serverIPAddress = "";
+    char * serverIPAddress = "10.15.22.73";
 
     // handle console arguments
     if (argc > 2)
