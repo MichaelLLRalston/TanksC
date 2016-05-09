@@ -2,33 +2,82 @@
 #include "IAgent.h"
 #include <list>
 #include "Vector2.h"
+#include <cmath>
 
 class RalstonAgent : public IAgent
 {
 	tankNet::TankBattleStateData current, previous;
 	tankNet::TankBattleCommand action;
+	tankNet::TankTacticalInfo Target;
 
 	Vector2 moveTarget;
 	Vector2 lookTarget;
 	Vector2 pastLocation;
+	Vector2 target;
+	Vector2 LastLocation;
 	float currentStandingStillTime;
 	float maxStandingStillTime;
+
+	enum Cannon {SCAN, TRACK, FIRE} turretstate = SCAN;
 	//std::list<tankNet::TankBattleStateData> states;
 
-	// aim the cannon at the target
-	bool lookToward(const Vector2 &target)
+
+	void scan()
 	{
 		Vector2 Caim = Vector2::fromXZ(current.cannonForward);
+		Vector2 Cp = Vector2::fromXZ(current.position);
 
-		Vector2 Taim = normal(target - Caim);
+		action.fireWish = false;
 
-		if (dot(Caim, perp(Taim)) > 0)
-			action.cannonMove = tankNet::CannonMovementOptions::RIGHT;
-		if (dot(Caim, perp(Taim)) < 0)
-			action.cannonMove = tankNet::CannonMovementOptions::LEFT;
-		if (dot(Caim, perp(Taim)) == 0)
-			return distance(Caim, target);
+		action.cannonMove = tankNet::CannonMovementOptions::LEFT;
+		for (int enemy = 0; enemy < current.playerCount - 1; ++enemy) 
+		{
+			if (current.tacticoolData[enemy].inSight && current.canFire)
+			{
+				target = Vector2::fromXZ(current.tacticoolData[enemy].lastKnownPosition);
+
+				if (dot(Caim, normal(target - Cp)) > .5f)
+					turretstate = FIRE;
+				break;
+			}
+		}
 	}
+	void track()
+	{
+		Vector2 Caim = Vector2::fromXZ(current.cannonForward);
+		Vector2 Epos = Vector2::fromXZ(Target.lastKnownPosition);
+		Vector2 Cp = Vector2::fromXZ(current.position);
+
+		for (int enemy = 0; enemy < current.playerCount - 1; ++enemy)
+
+		{
+			if (current.tacticoolData[enemy].inSight)
+			{
+				Caim = Epos;
+			}
+			else
+			{
+				turretstate = SCAN;
+			}
+
+		}
+	}
+	void fire()
+	{
+		action.fireWish = current.canFire;
+		turretstate = TRACK;
+	}
+		// auto reset timer 
+		
+		
+	//Vector2 Taim = normal(target - Caim)
+	//	if (dot(Caim, perp(Taim)) > 0)
+	//		action.cannonMove = tankNet::CannonMovementOptions::RIGHT;	
+	//	if (dot(Caim, perp(Taim)) < 0)
+	//		action.cannonMove = tankNet::CannonMovementOptions::LEFT;
+	//	if (dot(Caim, perp(Taim)) == 0)
+	//		return distance(Caim, target);
+
 
 	// Find a good value for tank Move
 	bool moveToward(const Vector2 &target)
@@ -66,16 +115,16 @@ class RalstonAgent : public IAgent
 		return distance(cpos, target) < 10;
 	}
 
+
 public:
 	RalstonAgent()
 	{
 		currentStandingStillTime = 0;
-		maxStandingStillTime = 1;
+		maxStandingStillTime = 2;
 		moveTarget = Vector2::random() * Vector2 { 50, 50 };
 		std::cout << "Target Acquired: " << moveTarget.x << " " << moveTarget.y << std::endl;
 
-		lookTarget = Vector2::random() * Vector2 { 50, 50 };
-		std::cout << "Target Spotted: " << lookTarget.x << " " << lookTarget.y << std::endl;
+	
 	}
 
 	tankNet::TankBattleCommand update(tankNet::TankBattleStateData *state)
@@ -83,6 +132,20 @@ public:
 		previous = current;
 		current  = *state;
 		float deltaTime = sfw::getDeltaTime();
+		action.msg = tankNet::TankBattleMessage::GAME;
+
+		switch (turretstate)
+		{
+		case FIRE:
+			fire();
+			break;
+		case SCAN: 
+			scan(); 
+			break;
+		case TRACK:
+			track();
+			break;
+		}
 
 	/*
 		Analyze the state data and determine which actions you want.
@@ -95,12 +158,7 @@ public:
 			moveTarget = Vector2::random() * Vector2 { 50, 50 };
 			std::cout << "Target Acquired: " << moveTarget.x << " " << moveTarget.y << std::endl;
 		}
-		if (lookToward(lookTarget))
-		{
-			std::cout << "Target Spotted: " << lookTarget.x << " " << lookTarget.y << std::endl;
-			lookTarget = Vector2::random() * Vector2 { 50, 50 };
-			std::cout << "Target Visualized: " << lookTarget.x << " " << lookTarget.y << std::endl;
-		}
+
 
 		const Vector2 cpos = Vector2::fromXZ(current.position);
 
@@ -116,12 +174,18 @@ public:
 		{
 			currentStandingStillTime = 0;
 		}
+		
+		/*if (abs(LastLocation.x - pastLocation.x) > (abs(pastLocation.x - cpos.x)) || (abs((LastLocation.y - pastLocation.y) > (abs(pastLocation.y - cpos.y)))))
+		{
+			
+
+		}*/
 
 		pastLocation = cpos;
 
 		//action.cannonMove = tankNet::CannonMovementOptions::LEFT;
 		//action.tankMove   = tankNet::TankMovementOptions::FWRD;
-		action.fireWish   = false;
+		//action.fireWish   = false;
 
 		return action;
 	}
