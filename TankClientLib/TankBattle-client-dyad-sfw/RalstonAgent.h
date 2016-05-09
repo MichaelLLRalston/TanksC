@@ -36,7 +36,7 @@ class RalstonAgent : public IAgent
 			{
 				target = Vector2::fromXZ(current.tacticoolData[enemy].lastKnownPosition);
 
-				if (dot(Caim, normal(target - Cp)) > .5f)
+				if (dot(Caim, normal(target - Cp)) > .899f)
 					turretstate = FIRE;
 				break;
 			}
